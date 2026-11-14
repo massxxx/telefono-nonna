@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'it.massxxx.telefononna'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'it.massxxx.telefononna'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        chiave {
+            storeFile file('../chiave.keystore')
+            storePassword 'telefononna'
+            keyAlias 'nonna'
+            keyPassword 'telefononna'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.chiave
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}

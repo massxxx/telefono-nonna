@@ -1,0 +1,47 @@
+name: APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Prova lettura comandi SMS
+        run: |
+          mkdir -p /tmp/t
+          javac -d /tmp/t app/src/main/java/it/massxxx/telefononna/Comandi.java test/ProvaComandi.java
+          java -cp /tmp/t ProvaComandi
+
+      - name: Compila APK
+        run: gradle --no-daemon assembleRelease
+
+      - name: Rinomina
+        run: cp app/build/outputs/apk/release/app-release.apk TelefonoNonna.apk
+
+      - name: Pubblica release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app
+          name: Telefono Nonna
+          body: |
+            Scarica **TelefonoNonna.apk** e installalo su entrambi i telefoni Android (quello della nonna e il telecomando).
+            Versione compilata dal commit ${{ github.sha }}.
+          files: TelefonoNonna.apk
+          make_latest: true
