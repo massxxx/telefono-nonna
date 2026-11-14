@@ -324,9 +324,17 @@ public class MainActivity extends Activity {
             mostra();
         }));
 
-        if (!haSms() || (Build.VERSION.SDK_INT >= 33 && !haPermesso(Manifest.permission.POST_NOTIFICATIONS))) {
-            col.addView(Ui.bottone(this, "🔓 Concedi permessi SMS e notifiche", Ui.ARANCIO, v -> chiediSms()));
-            col.addView(Ui.testo(this, "Se Android dice \"Impostazione con restrizioni\": Info app → menu ⋮ → \"Consenti impostazioni con restrizioni\"."));
+        col.addView(Ui.sezione(this, "Permessi"));
+        rigaPermesso("SMS (mandare comandi e ricevere risposte)", haSms(), this::chiediSms);
+        if (Build.VERSION.SDK_INT >= 33) {
+            rigaPermesso("Notifiche", haPermesso(Manifest.permission.POST_NOTIFICATIONS),
+                    () -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, RICHIESTA_PERMESSI));
+        }
+        if (!haSms()) {
+            col.addView(Ui.testo(this, "Se premendo \"Concedi\" non compare niente: Info app → Autorizzazioni → SMS → Consenti. "
+                    + "Se è grigio: Info app → menu ⋮ in alto → \"Consenti impostazioni con restrizioni\"."));
+            col.addView(Ui.piccolo(this, "Apri Info app", v -> apri(new Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())))));
         }
 
         col.addView(Ui.sezione(this, "Comandi"));
@@ -375,11 +383,24 @@ public class MainActivity extends Activity {
         String numero = prefs.numeroNonna();
         String pin = prefs.pinTelecomando();
         if (numero.isEmpty() || pin.length() < 4) {
+            if (statoInvio != null) statoInvio.setText("❌ Non inviato: prima scrivi numero e codice della nonna e premi Salva.");
             Toast.makeText(this, "Prima salva numero e codice della nonna", Toast.LENGTH_LONG).show();
             return;
         }
-        if (!haPermesso(Manifest.permission.SEND_SMS)) {
-            chiediSms();
+        if (!haSms()) {
+            if (statoInvio != null) statoInvio.setText("❌ Non inviato: manca il permesso SMS.");
+            new AlertDialog.Builder(this)
+                    .setTitle("Manca il permesso SMS")
+                    .setMessage("Senza questo permesso il telecomando non può mandare i comandi.\n\n"
+                            + "Prova \"Concedi\". Se non compare nessuna richiesta, premi \"Apri impostazioni\" e vai su "
+                            + "Autorizzazioni → SMS → Consenti.\n\n"
+                            + "Se SMS è grigio o dice \"Impostazione con restrizioni\": nella stessa pagina tocca il menu ⋮ "
+                            + "in alto a destra → \"Consenti impostazioni con restrizioni\", poi riprova.")
+                    .setPositiveButton("Concedi", (d, w) -> chiediSms())
+                    .setNeutralButton("Apri impostazioni", (d, w) -> apri(new Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))))
+                    .setNegativeButton("Annulla", null)
+                    .show();
             return;
         }
         try {
@@ -450,6 +471,22 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for (int i = 0; i < grantResults.length; i++) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED
+                    && !Manifest.permission.POST_NOTIFICATIONS.equals(permissions[i])
+                    && !shouldShowRequestPermissionRationale(permissions[i])) {
+                // Android non mostra più la richiesta: si va nelle impostazioni dell'app
+                new AlertDialog.Builder(this)
+                        .setTitle("Permesso da dare a mano")
+                        .setMessage("Android non mostra più la richiesta. Apri Info app → Autorizzazioni e scegli \"Consenti\".\n\n"
+                                + "Se il permesso è grigio: menu ⋮ in alto a destra → \"Consenti impostazioni con restrizioni\".")
+                        .setPositiveButton("Apri impostazioni", (d, w) -> apri(new Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))))
+                        .setNegativeButton("Annulla", null)
+                        .show();
+                break;
+            }
+        }
         mostra();
     }
 }
