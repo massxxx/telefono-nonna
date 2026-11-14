@@ -98,6 +98,7 @@ public class SquilloActivity extends Activity {
         String avvia = getIntent().getStringExtra("avvia");
         if (avvia != null) {
             getIntent().removeExtra("avvia");
+            new Prefs(this).annota("↪ Schermata aperta, avvio lo squillo da qui");
             NonnaService.comando(this, avvia, getIntent().getStringExtra("mittente"));
         } else if (!new Prefs(this).squillando()) {
             finish();

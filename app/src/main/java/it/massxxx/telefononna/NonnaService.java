@@ -63,6 +63,7 @@ public class NonnaService extends Service {
             c.startForegroundService(i);
         } catch (Exception e) {
             Log.w(TAG, "Servizio non avviabile dallo sfondo: " + e);
+            new Prefs(c).annota("⚠️ Android ha bloccato l'avvio dallo sfondo: servono \"Batteria senza limitazioni\" e \"Mostra sopra le altre app\" (" + e.getClass().getSimpleName() + ")");
             // Ripiego: apre la schermata, che avvia il servizio quando è visibile
             if (Comandi.SQUILLA.equals(azione) || PROVA.equals(azione)) {
                 try {
@@ -96,6 +97,7 @@ public class NonnaService extends Service {
             fineSeLibero();
             return START_NOT_STICKY;
         }
+        if (!PROVA.equals(azione)) prefs.annota("✅ Servizio avviato per " + azione);
         switch (azione) {
             case Comandi.SQUILLA: squilla(mittente, false); break;
             case PROVA: squilla(null, true); break;
@@ -299,7 +301,12 @@ public class NonnaService extends Service {
     }
 
     private void rispondi(String numero, String testo) {
-        if (numero == null || checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) return;
+        if (numero == null) return;
+        if (checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            prefs.annota("❌ Risposta non inviata: manca il permesso SMS");
+            return;
+        }
+        prefs.annota("📤 Risposta a " + numero);
         try {
             SmsManager sm = null;
             if (Build.VERSION.SDK_INT >= 31) sm = getSystemService(SmsManager.class);

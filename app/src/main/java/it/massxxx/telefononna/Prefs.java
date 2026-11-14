@@ -59,6 +59,16 @@ public final class Prefs {
         sp.edit().putString("ultimaRisposta", testo).putLong("ultimaOra", ora).apply();
     }
 
+    /** Registro degli ultimi eventi (più recente in alto, massimo 15 righe). */
+    public String registro() { return sp.getString("registro", ""); }
+    public synchronized void annota(String riga) {
+        String ora = new java.text.SimpleDateFormat("dd/MM HH:mm:ss", java.util.Locale.ITALY).format(new java.util.Date());
+        String[] vecchie = registro().isEmpty() ? new String[0] : registro().split("\n");
+        StringBuilder sb = new StringBuilder(ora).append("  ").append(riga);
+        for (int i = 0; i < Math.min(14, vecchie.length); i++) sb.append("\n").append(vecchie[i]);
+        sp.edit().putString("registro", sb.toString()).commit();
+    }
+
     public boolean squillando() { return sp.getBoolean("squillando", false); }
     public void squillando(boolean v) { sp.edit().putBoolean("squillando", v).commit(); }
 }

@@ -261,6 +261,16 @@ public class MainActivity extends Activity {
         col.addView(Ui.testo(this, "Fa squillare questo telefono al massimo volume per 10 secondi, con la schermata del messaggio."));
         col.addView(Ui.bottone(this, "🔔 Prova completa (10 secondi)", Ui.ARANCIO, v -> NonnaService.comando(this, NonnaService.PROVA, null)));
 
+        // --- Registro ---
+        col.addView(Ui.sezione(this, "Ultimi SMS ricevuti"));
+        String reg = prefs.registro();
+        TextView regTxt = Ui.testo(this, reg.isEmpty()
+                ? "Ancora nessun comando ricevuto. Se mandi un comando e qui non compare niente, l'app non riceve gli SMS: controlla il permesso SMS."
+                : reg);
+        regTxt.setTextSize(14);
+        col.addView(Ui.riquadro(this, regTxt));
+        col.addView(Ui.piccolo(this, "🔄 Aggiorna", v -> mostra()));
+
         // --- Comandi ---
         col.addView(Ui.sezione(this, "Comandi SMS"));
         String c = prefs.pin();

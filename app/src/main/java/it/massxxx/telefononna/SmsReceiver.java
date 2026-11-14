@@ -26,12 +26,18 @@ public class SmsReceiver extends BroadcastReceiver {
 
         if (Prefs.MODO_NONNA.equals(p.modo())) {
             String comando = Comandi.leggi(testo, p.pin());
-            if (comando == null) return;
+            boolean sembraComando = testo.trim().toUpperCase().startsWith(Comandi.PREFISSO + " ");
+            if (comando == null) {
+                if (sembraComando) p.annota("❌ SMS \"" + testo.trim() + "\": codice sbagliato o comando sconosciuto (il codice giusto è " + p.pin() + ")");
+                return;
+            }
             String solo = p.soloDa();
             if (!solo.isEmpty() && !Comandi.stessoNumero(solo, mittente)) {
                 Log.i("TelefonoNonna", "Comando da numero non autorizzato");
+                p.annota("❌ " + comando + " da " + mittente + ": numero non autorizzato (accetta solo " + solo + ")");
                 return;
             }
+            p.annota("📩 Ricevuto " + comando + " da " + mittente);
             NonnaService.comando(ctx, comando, mittente);
         } else if (Prefs.MODO_TELECOMANDO.equals(p.modo())) {
             if (!Comandi.eRisposta(testo)) return;
