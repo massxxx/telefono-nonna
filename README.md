@@ -1,5 +1,7 @@
 # 📞 Telefono Nonna
 
+[![Scarica l'APK per Android](https://img.shields.io/badge/Scarica-APK%20Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/massxxx/telefono-nonna/releases/latest/download/TelefonoNonna.apk)
+
 App Android per far squillare **al massimo volume** il telefono della nonna con un comando a distanza, anche se è in silenzioso o in "Non disturbare". Funziona via **SMS**: non serve internet.
 
 **Scarica l'APK:** https://github.com/massxxx/telefono-nonna/releases/latest/download/TelefonoNonna.apk
